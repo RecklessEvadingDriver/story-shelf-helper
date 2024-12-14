@@ -1,6 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
 import { BookCard } from "@/components/BookCard";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for featured books
 const featuredBooks = [
@@ -35,6 +37,8 @@ const featuredBooks = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -42,7 +46,12 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-12">
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">Featured Books</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Featured Books</h2>
+            <Button variant="outline" onClick={() => navigate("/books")}>
+              View All
+            </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {featuredBooks.map((book) => (
               <BookCard key={book.id} {...book} />
@@ -56,11 +65,26 @@ const Index = () => {
             {["Fiction", "Non-Fiction", "Science", "Technology", "Business", "Arts"].map((category) => (
               <div
                 key={category}
-                className="bg-secondary rounded-lg p-6 text-center hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                onClick={() => navigate(`/books?category=${category}`)}
+                className="bg-secondary rounded-lg p-6 text-center hover:bg-primary hover:text-white transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm hover:shadow-md"
               >
                 <h3 className="font-semibold">{category}</h3>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="mb-16">
+          <div className="bg-accent/10 rounded-2xl p-8 md:p-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Book Club</h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Get exclusive access to new releases, author interviews, and special discounts.
+              </p>
+              <Button size="lg" onClick={() => navigate("/join-club")}>
+                Learn More
+              </Button>
+            </div>
           </div>
         </section>
       </main>

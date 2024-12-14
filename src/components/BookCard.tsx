@@ -1,6 +1,7 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 
 interface BookCardProps {
   id: number;
@@ -14,25 +15,39 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
   const navigate = useNavigate();
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg animate-fadeIn">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group animate-fadeIn">
       <CardContent className="p-0">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-        />
+        <div className="relative overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <Button
+              variant="secondary"
+              className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
+              onClick={() => navigate(`/book/${id}`)}
+            >
+              Quick View
+            </Button>
+          </div>
+        </div>
         <div className="p-4">
-          <h3 className="font-semibold text-lg truncate">{title}</h3>
+          <h3 className="font-semibold text-lg truncate hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/book/${id}`)}>
+            {title}
+          </h3>
           <p className="text-muted-foreground">{author}</p>
           <p className="text-primary font-bold mt-2">${price.toFixed(2)}</p>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button
-          className="w-full"
-          onClick={() => navigate(`/book/${id}`)}
+          className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
+          variant="outline"
         >
-          View Details
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          Add to Cart
         </Button>
       </CardFooter>
     </Card>
