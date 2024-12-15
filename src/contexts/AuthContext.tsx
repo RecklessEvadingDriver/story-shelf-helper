@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "@/components/ui/use-toast";
 
 interface User {
   id: string;
@@ -22,28 +23,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Mock authentication functions (replace with Supabase after integration)
+  useEffect(() => {
+    // Simulate checking for existing session
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setLoading(false);
+  }, []);
+
   const signIn = async (email: string, password: string) => {
-    // Simulate API call
-    setUser({ id: '1', email, name: 'John Doe' });
-    navigate('/');
+    try {
+      // Simulate API call
+      const mockUser = { id: '1', email, name: email.split('@')[0] };
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error signing in",
+        description: "Please check your credentials and try again.",
+      });
+    }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    // Simulate API call
-    setUser({ id: '1', email, name });
-    navigate('/');
+    try {
+      // Simulate API call
+      const mockUser = { id: '1', email, name };
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      toast({
+        title: "Welcome!",
+        description: "Your account has been created successfully.",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error signing up",
+        description: "Please try again later.",
+      });
+    }
   };
 
   const signOut = async () => {
     setUser(null);
+    localStorage.removeItem('user');
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
     navigate('/');
   };
-
-  useEffect(() => {
-    // Check for existing session
-    setLoading(false);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
