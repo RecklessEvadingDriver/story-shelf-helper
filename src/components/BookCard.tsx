@@ -15,7 +15,7 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
   const navigate = useNavigate();
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group animate-fadeIn">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group animate-fadeIn bg-card dark:bg-card">
       <CardContent className="p-0">
         <div className="relative overflow-hidden">
           <img
@@ -34,7 +34,7 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-lg truncate hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/book/${id}`)}>
+          <h3 className="font-semibold text-lg truncate hover:text-primary transition-colors cursor-pointer text-foreground" onClick={() => navigate(`/book/${id}`)}>
             {title}
           </h3>
           <p className="text-muted-foreground">{author}</p>
@@ -43,7 +43,7 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button
-          className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
+          className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
           variant="outline"
         >
           <ShoppingCart className="mr-2 h-4 w-4" />

@@ -1,7 +1,13 @@
-import { ShoppingCart, Search, Menu, Sun, Moon } from "lucide-react";
+import { ShoppingCart, Search, Menu, Sun, Moon, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +28,11 @@ export const Navbar = () => {
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle("dark");
+    if (document.documentElement.classList.contains("dark")) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
   };
 
   useEffect(() => {
@@ -39,7 +50,7 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-background border-b border-border">
+    <nav className="sticky top-0 z-50 bg-background border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu */}
@@ -49,7 +60,7 @@ export const Navbar = () => {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
+            <SheetContent side="left" className="w-[300px] dark:bg-background">
               <div className="flex flex-col gap-4 mt-8">
                 {categories.map((category) => (
                   <Button
@@ -80,6 +91,7 @@ export const Navbar = () => {
                 key={category}
                 variant="ghost"
                 onClick={() => navigate(`/books?category=${category}`)}
+                className="text-foreground hover:text-primary"
               >
                 {category}
               </Button>
@@ -92,13 +104,18 @@ export const Navbar = () => {
               <Input
                 type="search"
                 placeholder="Search books..."
-                className="w-64"
+                className="w-64 bg-background"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </form>
             
-            <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleDarkMode}
+              className="text-foreground hover:text-primary"
+            >
               {isDarkMode ? (
                 <Sun className="h-5 w-5" />
               ) : (
@@ -106,16 +123,42 @@ export const Navbar = () => {
               )}
             </Button>
 
-            <Button variant="ghost" size="icon" onClick={() => navigate("/cart")}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate("/cart")}
+              className="text-foreground hover:text-primary"
+            >
               <ShoppingCart className="h-6 w-6" />
             </Button>
 
             {user ? (
-              <Button variant="outline" onClick={() => signOut()}>
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-foreground hover:text-primary"
+                  >
+                    <User className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 dark:bg-background">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+              <Button 
+                onClick={() => navigate("/auth")}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>
