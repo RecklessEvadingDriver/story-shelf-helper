@@ -1,4 +1,4 @@
-import { ShoppingCart, Search, Menu, Sun, Moon, User } from "lucide-react";
+import { ShoppingCart, Search, Menu, Sun, Moon, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -138,24 +138,28 @@ export const Navbar = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="text-foreground hover:text-primary dark:text-foreground/90"
+                    className="relative text-foreground hover:text-primary dark:text-foreground/90"
                   >
                     <User className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 dark:bg-background/95">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-56 dark:bg-background/95 mt-2"
+                  sideOffset={5}
+                >
                   <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/orders")} className="cursor-pointer">
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Orders
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                    Settings
-                  </DropdownMenuItem>
+                  {user.role === 'admin' && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")} className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-500 dark:text-red-400">
+                    <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
