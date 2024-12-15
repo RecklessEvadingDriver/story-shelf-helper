@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   name?: string;
+  role: 'user' | 'admin'; // Add the role property with a specific type
 }
 
 interface AuthContextType {
@@ -35,7 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       // Simulate API call
-      const mockUser = { id: '1', email, name: email.split('@')[0] };
+      const mockUser: User = { 
+        id: '1', 
+        email, 
+        name: email.split('@')[0],
+        role: email.includes('admin') ? 'admin' : 'user' // Set role based on email
+      };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
       toast({
@@ -55,7 +61,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, name: string) => {
     try {
       // Simulate API call
-      const mockUser = { id: '1', email, name };
+      const mockUser: User = { 
+        id: '1', 
+        email, 
+        name,
+        role: 'user' // Default role for new users
+      };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
       toast({
