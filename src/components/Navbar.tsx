@@ -50,7 +50,7 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-background border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 bg-background/95 dark:bg-background/95 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu */}
@@ -66,7 +66,7 @@ export const Navbar = () => {
                   <Button
                     key={category}
                     variant="ghost"
-                    className="justify-start"
+                    className="justify-start dark:text-foreground/90 dark:hover:text-primary"
                     onClick={() => navigate(`/books?category=${category}`)}
                   >
                     {category}
@@ -81,7 +81,7 @@ export const Navbar = () => {
             className="flex-shrink-0 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <h1 className="text-2xl font-bold text-primary">BookStore</h1>
+            <h1 className="text-2xl font-bold text-primary dark:text-primary/90">BookStore</h1>
           </div>
 
           {/* Desktop Navigation */}
@@ -91,7 +91,7 @@ export const Navbar = () => {
                 key={category}
                 variant="ghost"
                 onClick={() => navigate(`/books?category=${category}`)}
-                className="text-foreground hover:text-primary"
+                className="text-foreground hover:text-primary dark:text-foreground/90 dark:hover:text-primary"
               >
                 {category}
               </Button>
@@ -104,7 +104,7 @@ export const Navbar = () => {
               <Input
                 type="search"
                 placeholder="Search books..."
-                className="w-64 bg-background"
+                className="w-64 bg-background dark:bg-background/95"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -114,7 +114,7 @@ export const Navbar = () => {
               variant="ghost" 
               size="icon" 
               onClick={toggleDarkMode}
-              className="text-foreground hover:text-primary"
+              className="text-foreground hover:text-primary dark:text-foreground/90"
             >
               {isDarkMode ? (
                 <Sun className="h-5 w-5" />
@@ -127,7 +127,7 @@ export const Navbar = () => {
               variant="ghost" 
               size="icon" 
               onClick={() => navigate("/cart")}
-              className="text-foreground hover:text-primary"
+              className="text-foreground hover:text-primary dark:text-foreground/90"
             >
               <ShoppingCart className="h-6 w-6" />
             </Button>
@@ -138,16 +138,24 @@ export const Navbar = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="text-foreground hover:text-primary"
+                    className="text-foreground hover:text-primary dark:text-foreground/90"
                   >
                     <User className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 dark:bg-background">
-                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                <DropdownMenuContent align="end" className="w-56 dark:bg-background/95">
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut()}>
+                  <DropdownMenuItem onClick={() => navigate("/orders")} className="cursor-pointer">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-500 dark:text-red-400">
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -155,7 +163,7 @@ export const Navbar = () => {
             ) : (
               <Button 
                 onClick={() => navigate("/auth")}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary"
               >
                 Sign In
               </Button>

@@ -40,15 +40,15 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Navbar />
       <HeroSection />
       
       <main className="container mx-auto px-4 py-12">
         <section className="mb-16">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Books</h2>
-            <Button variant="outline" onClick={() => navigate("/books")}>
+            <h2 className="text-3xl font-bold text-foreground dark:text-foreground/90">Featured Books</h2>
+            <Button variant="outline" onClick={() => navigate("/books")} className="dark:border-accent/20 dark:text-foreground/90">
               View All
             </Button>
           </div>
@@ -60,13 +60,13 @@ const Index = () => {
         </section>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">Popular Categories</h2>
+          <h2 className="text-3xl font-bold mb-8 text-foreground dark:text-foreground/90">Popular Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {["Fiction", "Non-Fiction", "Science", "Technology", "Business", "Arts"].map((category) => (
               <div
                 key={category}
                 onClick={() => navigate(`/books?category=${category}`)}
-                className="bg-secondary rounded-lg p-6 text-center hover:bg-primary hover:text-white transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm hover:shadow-md"
+                className="bg-secondary dark:bg-accent/10 rounded-lg p-6 text-center hover:bg-primary hover:text-white dark:hover:bg-accent transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm hover:shadow-md dark:text-foreground/90"
               >
                 <h3 className="font-semibold">{category}</h3>
               </div>
@@ -75,13 +75,13 @@ const Index = () => {
         </section>
 
         <section className="mb-16">
-          <div className="bg-accent/10 rounded-2xl p-8 md:p-12">
+          <div className="bg-accent/10 dark:bg-accent/5 rounded-2xl p-8 md:p-12">
             <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Book Club</h2>
-              <p className="text-lg text-muted-foreground mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground dark:text-foreground/90">Join Our Book Club</h2>
+              <p className="text-lg text-muted-foreground dark:text-muted-foreground/80 mb-6">
                 Get exclusive access to new releases, author interviews, and special discounts.
               </p>
-              <Button size="lg" onClick={() => navigate("/join-club")}>
+              <Button size="lg" onClick={() => navigate("/join-club")} className="dark:bg-accent dark:text-accent-foreground">
                 Learn More
               </Button>
             </div>
