@@ -19,7 +19,7 @@ export const Navbar = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth(); // Added signOut here
   const { toast } = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -212,7 +212,10 @@ export const Navbar = () => {
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-500 dark:text-red-400">
+                  <DropdownMenuItem 
+                    onClick={signOut} 
+                    className="cursor-pointer text-red-500 dark:text-red-400"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
