@@ -19,7 +19,7 @@ export const Navbar = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -34,11 +34,15 @@ export const Navbar = () => {
     setIsDarkMode(newMode);
     document.documentElement.classList.toggle("dark");
     
-    if (user) {
+    if (user?.id) {
       try {
         await supabase
           .from('profiles')
-          .upsert({ id: user.id, dark_mode: newMode });
+          .upsert({ 
+            id: user.id,
+            dark_mode: newMode,
+            updated_at: new Date().toISOString()
+          });
       } catch (error) {
         toast({
           title: "Error saving preference",
@@ -51,18 +55,22 @@ export const Navbar = () => {
 
   useEffect(() => {
     const loadDarkModePreference = async () => {
-      if (user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('dark_mode')
-          .eq('id', user.id)
-          .single();
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('dark_mode')
+            .eq('id', user.id)
+            .single();
 
-        if (!error && data) {
-          setIsDarkMode(data.dark_mode);
-          if (data.dark_mode) {
-            document.documentElement.classList.add("dark");
+          if (!error && data) {
+            setIsDarkMode(data.dark_mode);
+            if (data.dark_mode) {
+              document.documentElement.classList.add("dark");
+            }
           }
+        } catch (error) {
+          console.error('Error loading dark mode preference:', error);
         }
       }
     };
