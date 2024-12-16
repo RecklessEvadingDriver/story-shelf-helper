@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ShoppingBag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { Database } from "@/integrations/supabase/types";
 
 type Order = {
   id: string;
@@ -45,9 +44,9 @@ export const OrderHistory = () => {
         .from('orders')
         .select(`
           *,
-          order_items (
+          order_items:order_items (
             *,
-            books (*)
+            books:books (*)
           )
         `)
         .eq('user_id', user?.id)
