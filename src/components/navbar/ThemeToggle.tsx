@@ -11,7 +11,13 @@ export const ThemeToggle = () => {
   const { toast } = useToast();
 
   const toggleDarkMode = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      // If no user, just toggle the theme locally
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      document.documentElement.classList.toggle("dark");
+      return;
+    }
     
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -27,7 +33,7 @@ export const ThemeToggle = () => {
         });
 
       if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving dark mode preference:', error);
       toast({
         title: "Error saving preference",
@@ -54,15 +60,18 @@ export const ThemeToggle = () => {
           setIsDarkMode(data.dark_mode || false);
           if (data.dark_mode) {
             document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading dark mode preference:', error);
+        // Don't show toast for loading errors to avoid spamming the user
       }
     };
 
     loadDarkModePreference();
-  }, [user]);
+  }, [user?.id]); // Only reload when user ID changes
 
   return (
     <Button 
