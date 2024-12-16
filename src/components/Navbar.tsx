@@ -1,26 +1,18 @@
-import { ShoppingCart, Search, Menu, Sun, Moon, User, Settings, LogOut } from "lucide-react";
+import { ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { MobileMenu } from "./navbar/MobileMenu";
+import { UserMenu } from "./navbar/UserMenu";
+import { ThemeToggle } from "./navbar/ThemeToggle";
 
 export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuth(); // Added signOut here
-  const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,55 +20,6 @@ export const Navbar = () => {
       navigate(`/books?search=${encodeURIComponent(searchQuery)}`);
     }
   };
-
-  const toggleDarkMode = async () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    document.documentElement.classList.toggle("dark");
-    
-    if (user?.id) {
-      try {
-        await supabase
-          .from('profiles')
-          .upsert({ 
-            id: user.id,
-            dark_mode: newMode,
-            updated_at: new Date().toISOString()
-          });
-      } catch (error) {
-        toast({
-          title: "Error saving preference",
-          description: "Your dark mode preference couldn't be saved.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    const loadDarkModePreference = async () => {
-      if (user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('dark_mode')
-            .eq('id', user.id)
-            .single();
-
-          if (!error && data) {
-            setIsDarkMode(data.dark_mode);
-            if (data.dark_mode) {
-              document.documentElement.classList.add("dark");
-            }
-          }
-        } catch (error) {
-          console.error('Error loading dark mode preference:', error);
-        }
-      }
-    };
-
-    loadDarkModePreference();
-  }, [user]);
 
   const categories = [
     "Fiction",
@@ -95,32 +38,8 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background/95 dark:bg-background/95 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Mobile menu */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] dark:bg-background">
-              <div className="flex flex-col gap-4 mt-8">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant="ghost"
-                    className={`justify-start dark:text-foreground/90 dark:hover:text-primary ${
-                      isActiveLink(`/books?category=${category}`) ? 'bg-accent text-accent-foreground' : ''
-                    }`}
-                    onClick={() => navigate(`/books?category=${category}`)}
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </SheetContent>
-          </Sheet>
+          <MobileMenu categories={categories} isActiveLink={isActiveLink} />
 
-          {/* Logo */}
           <div
             className="flex-shrink-0 cursor-pointer"
             onClick={() => navigate("/")}
@@ -128,7 +47,6 @@ export const Navbar = () => {
             <h1 className="text-2xl font-bold text-primary dark:text-primary/90">BookStore</h1>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {categories.slice(0, 4).map((category) => (
               <Button
@@ -144,7 +62,6 @@ export const Navbar = () => {
             ))}
           </div>
 
-          {/* Search, Cart, Theme, and Auth */}
           <div className="flex items-center space-x-4">
             <form onSubmit={handleSearch} className="hidden md:flex">
               <Input
@@ -156,18 +73,7 @@ export const Navbar = () => {
               />
             </form>
             
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleDarkMode}
-              className="text-foreground hover:text-primary dark:text-foreground/90"
-            >
-              {isDarkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            <ThemeToggle />
 
             <Button 
               variant="ghost" 
@@ -181,46 +87,7 @@ export const Navbar = () => {
             </Button>
 
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="relative text-foreground hover:text-primary dark:text-foreground/90"
-                  >
-                    <User className="h-6 w-6" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-56 dark:bg-background/95 mt-2"
-                  sideOffset={5}
-                >
-                  <DropdownMenuItem 
-                    onClick={() => navigate("/profile")} 
-                    className={`cursor-pointer ${isActiveLink('/profile') ? 'bg-accent text-accent-foreground' : ''}`}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  {user.role === 'admin' && (
-                    <DropdownMenuItem 
-                      onClick={() => navigate("/admin")} 
-                      className={`cursor-pointer ${isActiveLink('/admin') ? 'bg-accent text-accent-foreground' : ''}`}
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Admin Dashboard
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={signOut} 
-                    className="cursor-pointer text-red-500 dark:text-red-400"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu isActiveLink={isActiveLink} />
             ) : (
               <Button 
                 onClick={() => navigate("/auth")}
