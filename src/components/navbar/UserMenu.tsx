@@ -27,36 +27,40 @@ export const UserMenu = ({ isActiveLink }: UserMenuProps) => {
           size="icon"
           className="relative text-foreground hover:text-primary dark:text-foreground/90"
         >
-          <User className="h-6 w-6" />
+          <User className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-56 dark:bg-background/95 mt-2"
+        className="w-56 bg-background border border-border shadow-lg mt-2"
         sideOffset={5}
       >
         <DropdownMenuItem 
           onClick={() => navigate("/profile")} 
-          className={`cursor-pointer ${isActiveLink('/profile') ? 'bg-accent text-accent-foreground' : ''}`}
+          className={`cursor-pointer flex items-center px-3 py-2 text-sm ${
+            isActiveLink('/profile') ? 'bg-accent text-accent-foreground' : ''
+          }`}
         >
           <User className="mr-2 h-4 w-4" />
-          Profile
+          <span>Profile</span>
         </DropdownMenuItem>
         {user.role === 'admin' && (
           <DropdownMenuItem 
             onClick={() => navigate("/admin")} 
-            className={`cursor-pointer ${isActiveLink('/admin') ? 'bg-accent text-accent-foreground' : ''}`}
+            className={`cursor-pointer flex items-center px-3 py-2 text-sm ${
+              isActiveLink('/admin') ? 'bg-accent text-accent-foreground' : ''
+            }`}
           >
             <Settings className="mr-2 h-4 w-4" />
-            Admin Dashboard
+            <span>Admin Dashboard</span>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem 
           onClick={signOut} 
-          className="cursor-pointer text-red-500 dark:text-red-400"
+          className="cursor-pointer flex items-center px-3 py-2 text-sm text-red-500 dark:text-red-400"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
+          <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
