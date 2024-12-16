@@ -11,48 +11,53 @@ export const ThemeToggle = () => {
   const { toast } = useToast();
 
   const toggleDarkMode = async () => {
+    if (!user?.id) return;
+    
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     document.documentElement.classList.toggle("dark");
     
-    if (user?.id) {
-      try {
-        await supabase
-          .from('profiles')
-          .upsert({ 
-            id: user.id,
-            dark_mode: newMode,
-            updated_at: new Date().toISOString()
-          });
-      } catch (error) {
-        toast({
-          title: "Error saving preference",
-          description: "Your dark mode preference couldn't be saved.",
-          variant: "destructive",
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ 
+          id: user.id,
+          dark_mode: newMode,
+          updated_at: new Date().toISOString()
         });
-      }
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving dark mode preference:', error);
+      toast({
+        title: "Error saving preference",
+        description: "Your dark mode preference couldn't be saved.",
+        variant: "destructive",
+      });
     }
   };
 
   useEffect(() => {
     const loadDarkModePreference = async () => {
-      if (user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('dark_mode')
-            .eq('id', user.id)
-            .single();
+      if (!user?.id) return;
 
-          if (!error && data) {
-            setIsDarkMode(data.dark_mode);
-            if (data.dark_mode) {
-              document.documentElement.classList.add("dark");
-            }
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('dark_mode')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setIsDarkMode(data.dark_mode || false);
+          if (data.dark_mode) {
+            document.documentElement.classList.add("dark");
           }
-        } catch (error) {
-          console.error('Error loading dark mode preference:', error);
         }
+      } catch (error) {
+        console.error('Error loading dark mode preference:', error);
       }
     };
 
