@@ -9,36 +9,66 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/books?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+  const toggleDarkMode = async () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
     document.documentElement.classList.toggle("dark");
-    if (document.documentElement.classList.contains("dark")) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-theme", "light");
+    
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .upsert({ id: user.id, dark_mode: newMode });
+      } catch (error) {
+        toast({
+          title: "Error saving preference",
+          description: "Your dark mode preference couldn't be saved.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setIsDarkMode(isDark);
-  }, []);
+    const loadDarkModePreference = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('dark_mode')
+          .eq('id', user.id)
+          .single();
+
+        if (!error && data) {
+          setIsDarkMode(data.dark_mode);
+          if (data.dark_mode) {
+            document.documentElement.classList.add("dark");
+          }
+        }
+      }
+    };
+
+    loadDarkModePreference();
+  }, [user]);
 
   const categories = [
     "Fiction",
@@ -49,8 +79,12 @@ export const Navbar = () => {
     "Arts",
   ];
 
+  const isActiveLink = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 dark:bg-background/95 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 bg-background/95 dark:bg-background/95 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu */}
@@ -66,7 +100,9 @@ export const Navbar = () => {
                   <Button
                     key={category}
                     variant="ghost"
-                    className="justify-start dark:text-foreground/90 dark:hover:text-primary"
+                    className={`justify-start dark:text-foreground/90 dark:hover:text-primary ${
+                      isActiveLink(`/books?category=${category}`) ? 'bg-accent text-accent-foreground' : ''
+                    }`}
                     onClick={() => navigate(`/books?category=${category}`)}
                   >
                     {category}
@@ -91,7 +127,9 @@ export const Navbar = () => {
                 key={category}
                 variant="ghost"
                 onClick={() => navigate(`/books?category=${category}`)}
-                className="text-foreground hover:text-primary dark:text-foreground/90 dark:hover:text-primary"
+                className={`text-foreground hover:text-primary dark:text-foreground/90 dark:hover:text-primary ${
+                  isActiveLink(`/books?category=${category}`) ? 'bg-accent text-accent-foreground' : ''
+                }`}
               >
                 {category}
               </Button>
@@ -127,7 +165,9 @@ export const Navbar = () => {
               variant="ghost" 
               size="icon" 
               onClick={() => navigate("/cart")}
-              className="text-foreground hover:text-primary dark:text-foreground/90"
+              className={`text-foreground hover:text-primary dark:text-foreground/90 ${
+                isActiveLink('/cart') ? 'bg-accent text-accent-foreground' : ''
+              }`}
             >
               <ShoppingCart className="h-6 w-6" />
             </Button>
@@ -148,12 +188,18 @@ export const Navbar = () => {
                   className="w-56 dark:bg-background/95 mt-2"
                   sideOffset={5}
                 >
-                  <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/profile")} 
+                    className={`cursor-pointer ${isActiveLink('/profile') ? 'bg-accent text-accent-foreground' : ''}`}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
                   {user.role === 'admin' && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")} className="cursor-pointer">
+                    <DropdownMenuItem 
+                      onClick={() => navigate("/admin")} 
+                      className={`cursor-pointer ${isActiveLink('/admin') ? 'bg-accent text-accent-foreground' : ''}`}
+                    >
                       <Settings className="mr-2 h-4 w-4" />
                       Admin Dashboard
                     </DropdownMenuItem>
@@ -167,7 +213,9 @@ export const Navbar = () => {
             ) : (
               <Button 
                 onClick={() => navigate("/auth")}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary"
+                className={`bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary ${
+                  isActiveLink('/auth') ? 'bg-primary/80' : ''
+                }`}
               >
                 Sign In
               </Button>

@@ -17,11 +17,12 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group animate-fadeIn bg-card dark:bg-card/95 dark:border-accent/20">
       <CardContent className="p-0">
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden aspect-[3/4]">
           <img
             src={imageUrl}
-            alt={title}
-            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+            alt={`Cover of ${title} by ${author}`}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
             <Button
