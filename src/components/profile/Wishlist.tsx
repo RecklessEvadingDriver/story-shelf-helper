@@ -6,22 +6,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
 
-type WishlistItem = {
-  id: string;
-  user_id: string;
-  book_id: string;
-  created_at: string;
-  books: {
-    id: string;
-    title: string;
-    author: string;
-    price: number;
-    cover_image: string | null;
-    description: string | null;
-    created_at: string;
-    updated_at: string;
-  };
+type WishlistItem = Database['public']['Tables']['wishlists']['Row'] & {
+  books: Database['public']['Tables']['books']['Row']
 };
 
 export const Wishlist = () => {

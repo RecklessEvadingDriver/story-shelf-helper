@@ -6,32 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ShoppingBag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Database } from "@/integrations/supabase/types";
 
-type Order = {
-  id: string;
-  created_at: string;
-  status: string;
-  total_amount: number;
-  user_id: string;
-  updated_at: string;
-  order_items: {
-    id: string;
-    order_id: string;
-    book_id: string;
-    quantity: number;
-    price_at_time: number;
-    created_at: string;
-    books: {
-      id: string;
-      title: string;
-      author: string;
-      price: number;
-      cover_image: string | null;
-      description: string | null;
-      created_at: string;
-      updated_at: string;
-    };
-  }[];
+type Order = Database['public']['Tables']['orders']['Row'] & {
+  order_items: (Database['public']['Tables']['order_items']['Row'] & {
+    books: Database['public']['Tables']['books']['Row']
+  })[]
 };
 
 export const OrderHistory = () => {
