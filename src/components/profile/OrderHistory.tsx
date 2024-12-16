@@ -6,6 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ShoppingBag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import type { Database } from "@/integrations/supabase/types";
+
+type Order = Database['public']['Tables']['orders']['Row'] & {
+  order_items: (Database['public']['Tables']['order_items']['Row'] & {
+    books: Database['public']['Tables']['books']['Row']
+  })[]
+}
 
 export const OrderHistory = () => {
   const { user } = useAuth();
@@ -15,12 +22,18 @@ export const OrderHistory = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, order_items(*, books(*))')
+        .select(`
+          *,
+          order_items (
+            *,
+            books (*)
+          )
+        `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data as Order[];
     },
     enabled: !!user?.id,
   });
@@ -63,7 +76,7 @@ export const OrderHistory = () => {
                 <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
                 <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {order.order_items.map((item: any) => item.books.title).join(", ")}
+                  {order.order_items.map(item => item.books.title).join(", ")}
                 </TableCell>
                 <TableCell>${order.total_amount.toFixed(2)}</TableCell>
                 <TableCell>

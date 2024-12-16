@@ -2,24 +2,33 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
+
+type WishlistItem = Database['public']['Tables']['wishlists']['Row'] & {
+  books: Database['public']['Tables']['books']['Row']
+}
 
 export const Wishlist = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: wishlistItems, isLoading } = useQuery({
     queryKey: ['wishlist', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wishlists')
-        .select('*, books(*)')
+        .select(`
+          *,
+          books (*)
+        `)
         .eq('user_id', user?.id);
 
       if (error) throw error;
-      return data || [];
+      return data as WishlistItem[];
     },
     enabled: !!user?.id,
   });
@@ -33,6 +42,8 @@ export const Wishlist = () => {
         .eq('book_id', bookId);
 
       if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['wishlist', user?.id] });
       toast.success('Removed from wishlist');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
@@ -62,7 +73,7 @@ export const Wishlist = () => {
   return (
     <ScrollArea className="h-[500px] pr-4">
       <div className="space-y-4">
-        {wishlistItems.map((item: any) => (
+        {wishlistItems.map((item) => (
           <Card key={item.id} className="p-4 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img
@@ -85,7 +96,7 @@ export const Wishlist = () => {
                 size="icon" 
                 variant="outline" 
                 className="text-destructive"
-                onClick={() => handleRemoveFromWishlist(item.book_id)}
+                onClick={() => handleRemoveFromWishlist(item.books.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
