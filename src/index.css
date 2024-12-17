@@ -51,7 +51,7 @@
  
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border antialiased;
   }
   
   html {
@@ -59,20 +59,20 @@
   }
   
   body {
-    @apply bg-background text-foreground antialiased leading-relaxed;
+    @apply bg-background text-foreground leading-relaxed;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medium tracking-tight;
+    @apply font-medium tracking-tight leading-tight;
   }
 
   h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold;
   }
 
   h2 {
-    @apply text-3xl md:text-4xl;
+    @apply text-3xl md:text-4xl font-semibold;
   }
 
   h3 {
@@ -80,7 +80,11 @@
   }
 
   p {
-    @apply leading-7;
+    @apply leading-7 md:leading-8 text-base md:text-lg;
+  }
+
+  a {
+    @apply transition-colors duration-200;
   }
 }
 
@@ -96,4 +100,19 @@
   .glass-effect {
     @apply bg-background/80 backdrop-blur-sm border border-border/50;
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
 }
