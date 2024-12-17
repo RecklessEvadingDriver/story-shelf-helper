@@ -36,7 +36,7 @@ export const HeroSection = () => {
                 className="h-12 dark:bg-background/95"
                 aria-label="Search books"
               />
-              <Button type="submit" size="lg" className="h-12">
+              <Button type="submit" size="lg" className="h-12 interactive-scale">
                 <Search className="mr-2 h-5 w-5" />
                 Search
               </Button>
@@ -47,7 +47,7 @@ export const HeroSection = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate("/books?category=New")}
-              className="text-lg dark:border-accent/20"
+              className="text-lg interactive-scale dark:border-accent/20"
             >
               New Arrivals
             </Button>
@@ -55,7 +55,7 @@ export const HeroSection = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate("/books?category=Bestsellers")}
-              className="text-lg dark:border-accent/20"
+              className="text-lg interactive-scale dark:border-accent/20"
             >
               Bestsellers
             </Button>

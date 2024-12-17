@@ -1,7 +1,7 @@
 import { ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { MobileMenu } from "./navbar/MobileMenu";
@@ -10,9 +10,18 @@ import { ThemeToggle } from "./navbar/ThemeToggle";
 
 export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +44,15 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 dark:bg-background/95 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
+    <nav className={`sticky top-0 z-50 transition-all duration-200 ${
+      isScrolled ? 'glass-effect shadow-sm' : 'bg-background dark:bg-background'
+    }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <MobileMenu categories={categories} isActiveLink={isActiveLink} />
 
           <div
-            className="flex-shrink-0 cursor-pointer"
+            className="flex-shrink-0 cursor-pointer interactive-scale"
             onClick={() => navigate("/")}
           >
             <h1 className="text-2xl font-bold text-primary dark:text-primary/90">BookStore</h1>
@@ -53,7 +64,7 @@ export const Navbar = () => {
                 key={category}
                 variant="ghost"
                 onClick={() => navigate(`/books?category=${category}`)}
-                className={`text-foreground hover:text-primary dark:text-foreground/90 dark:hover:text-primary ${
+                className={`text-foreground hover:text-primary transition-colors duration-200 dark:text-foreground/90 dark:hover:text-primary ${
                   isActiveLink(`/books?category=${category}`) ? 'bg-accent text-accent-foreground' : ''
                 }`}
               >
@@ -67,7 +78,7 @@ export const Navbar = () => {
               <Input
                 type="search"
                 placeholder="Search books..."
-                className="w-64 bg-background dark:bg-background/95"
+                className="w-64 transition-all duration-200 focus:w-80"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -79,7 +90,7 @@ export const Navbar = () => {
               variant="ghost" 
               size="icon" 
               onClick={() => navigate("/cart")}
-              className={`text-foreground hover:text-primary dark:text-foreground/90 ${
+              className={`interactive-scale text-foreground hover:text-primary dark:text-foreground/90 ${
                 isActiveLink('/cart') ? 'bg-accent text-accent-foreground' : ''
               }`}
             >
@@ -91,7 +102,7 @@ export const Navbar = () => {
             ) : (
               <Button 
                 onClick={() => navigate("/auth")}
-                className={`bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary ${
+                className={`interactive-scale bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary ${
                   isActiveLink('/auth') ? 'bg-primary/80' : ''
                 }`}
               >

@@ -44,7 +44,7 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button
-          className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors dark:border-accent/20"
+          className="w-full interactive-scale group-hover:bg-primary group-hover:text-primary-foreground transition-colors dark:border-accent/20"
           variant="outline"
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
