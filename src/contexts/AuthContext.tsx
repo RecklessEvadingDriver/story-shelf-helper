@@ -34,12 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const generateUUID = () => {
-    // Generate a proper UUID v4
-    return crypto.randomUUID();
-  };
-
-  const createProfile = async (userId: string) => {
+  const createProfile = async (userId: string, email: string) => {
     try {
       const { error } = await supabase
         .from('profiles')
@@ -49,17 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           updated_at: new Date().toISOString()
         });
 
-      if (error) throw error;
-    } catch (error: any) {
-      console.error('Error creating profile:', error);
-      // Don't throw here as we still want the user to be able to use the app
-      // even if profile creation fails
+      if (error) {
+        console.error('Error creating profile:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in createProfile:', error);
+      throw error;
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const userId = generateUUID();
+      // Generate a proper UUID for the user
+      const userId = crypto.randomUUID();
       const mockUser: User = { 
         id: userId,
         email, 
@@ -67,8 +65,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role: email.includes('admin') ? 'admin' : 'user'
       };
       
-      // Create or update profile
-      await createProfile(userId);
+      // Create or update profile with the UUID
+      await createProfile(userId, email);
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -78,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       navigate('/');
     } catch (error) {
+      console.error('Sign in error:', error);
       toast({
         variant: "destructive",
         title: "Error signing in",
@@ -88,7 +87,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      const userId = generateUUID();
+      // Generate a proper UUID for the user
+      const userId = crypto.randomUUID();
       const mockUser: User = { 
         id: userId,
         email, 
@@ -96,8 +96,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role: 'user'
       };
 
-      // Create profile for new user
-      await createProfile(userId);
+      // Create profile with the UUID
+      await createProfile(userId, email);
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -107,6 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       navigate('/');
     } catch (error) {
+      console.error('Sign up error:', error);
       toast({
         variant: "destructive",
         title: "Error signing up",
