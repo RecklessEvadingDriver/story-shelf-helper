@@ -6,7 +6,7 @@ interface User {
   id: string;
   email: string;
   name?: string;
-  role: 'user' | 'admin'; // Add the role property with a specific type
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -33,14 +33,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   }, []);
 
+  const generateUUID = () => {
+    // This is a mock UUID generator for development
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       // Simulate API call
       const mockUser: User = { 
-        id: '1', 
+        id: generateUUID(), // Using UUID format instead of "1"
         email, 
         name: email.split('@')[0],
-        role: email.includes('admin') ? 'admin' : 'user' // Set role based on email
+        role: email.includes('admin') ? 'admin' : 'user'
       };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
@@ -62,10 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // Simulate API call
       const mockUser: User = { 
-        id: '1', 
+        id: generateUUID(), // Using UUID format instead of "1"
         email, 
         name,
-        role: 'user' // Default role for new users
+        role: 'user'
       };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
