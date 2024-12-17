@@ -9,6 +9,7 @@ import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wishlist } from "@/components/profile/Wishlist";
 import { toast } from "sonner";
+import { Settings, Crown } from "lucide-react";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ const Profile = () => {
                   className="w-full justify-start"
                   onClick={() => navigate("/profile/settings")}
                 >
-                  <span className="mr-2">⚙️</span>
+                  <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Button>
                 {user.role === 'admin' && (
@@ -46,7 +47,7 @@ const Profile = () => {
                     className="w-full justify-start"
                     onClick={() => navigate("/admin")}
                   >
-                    <span className="mr-2">👑</span>
+                    <Crown className="mr-2 h-4 w-4" />
                     Admin Dashboard
                   </Button>
                 )}

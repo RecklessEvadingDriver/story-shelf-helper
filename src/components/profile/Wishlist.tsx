@@ -74,7 +74,7 @@ export const Wishlist = () => {
     <ScrollArea className="h-[500px] pr-4">
       <div className="space-y-4">
         {wishlistItems.map((item) => (
-          <Card key={item.id} className="p-4 flex items-center justify-between">
+          <Card key={item.id} className="p-4 flex items-center justify-between hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-4">
               <img
                 src={item.books.cover_image || '/placeholder.svg'}
@@ -95,7 +95,7 @@ export const Wishlist = () => {
               <Button 
                 size="icon" 
                 variant="outline" 
-                className="text-destructive"
+                className="text-destructive hover:bg-destructive/10"
                 onClick={() => handleRemoveFromWishlist(item.books.id)}
               >
                 <Trash2 className="h-4 w-4" />
