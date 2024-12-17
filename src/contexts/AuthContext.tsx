@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
@@ -34,7 +35,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const generateUUID = () => {
-    // This is a mock UUID generator for development
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -42,15 +42,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const createProfile = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ 
+          id: userId,
+          dark_mode: false,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Error creating profile:', error);
+      // Don't throw here as we still want the user to be able to use the app
+      // even if profile creation fails
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
-      // Simulate API call
+      const userId = generateUUID();
       const mockUser: User = { 
-        id: generateUUID(), // Using UUID format instead of "1"
+        id: userId,
         email, 
         name: email.split('@')[0],
         role: email.includes('admin') ? 'admin' : 'user'
       };
+      
+      // Create or update profile
+      await createProfile(userId);
+      
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
       toast({
@@ -69,13 +91,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // Simulate API call
+      const userId = generateUUID();
       const mockUser: User = { 
-        id: generateUUID(), // Using UUID format instead of "1"
+        id: userId,
         email, 
         name,
         role: 'user'
       };
+
+      // Create profile for new user
+      await createProfile(userId);
+      
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
       toast({
