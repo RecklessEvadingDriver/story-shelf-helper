@@ -23,7 +23,7 @@ export const Wishlist = () => {
         .from('wishlists')
         .select(`
           *,
-          books:books (*)
+          books (*)
         `)
         .eq('user_id', user?.id);
 
