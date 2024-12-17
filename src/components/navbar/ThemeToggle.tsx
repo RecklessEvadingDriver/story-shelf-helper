@@ -1,90 +1,91 @@
-import { Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-export const ThemeToggle = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
 
-  const toggleDarkMode = async () => {
-    if (!user?.id) {
-      // If no user, just toggle the theme locally
-      const newMode = !isDarkMode;
-      setIsDarkMode(newMode);
-      document.documentElement.classList.toggle("dark");
-      return;
+  useEffect(() => {
+    setMounted(true);
+    if (user) {
+      loadDarkModePreference();
     }
-    
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    document.documentElement.classList.toggle("dark");
-    
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ 
-          id: user.id,
-          dark_mode: newMode,
-          updated_at: new Date().toISOString()
-        });
+  }, [user]);
 
-      if (error) throw error;
-    } catch (error: any) {
-      console.error('Error saving dark mode preference:', error);
-      toast({
-        title: "Error saving preference",
-        description: "Your dark mode preference couldn't be saved.",
-        variant: "destructive",
-      });
+  const loadDarkModePreference = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('dark_mode')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading dark mode preference:', error);
+        return;
+      }
+
+      if (data?.dark_mode !== undefined) {
+        setTheme(data.dark_mode ? 'dark' : 'light');
+      }
+    } catch (error) {
+      console.error('Error loading dark mode preference:', error);
     }
   };
 
-  useEffect(() => {
-    const loadDarkModePreference = async () => {
-      if (!user?.id) return;
+  const saveDarkModePreference = async (isDark: boolean) => {
+    if (!user) return;
 
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('dark_mode')
-          .eq('id', user.id)
-          .single();
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          dark_mode: isDark,
+          updated_at: new Date().toISOString()
+        });
 
-        if (error) throw error;
-
-        if (data) {
-          setIsDarkMode(data.dark_mode || false);
-          if (data.dark_mode) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-        }
-      } catch (error: any) {
-        console.error('Error loading dark mode preference:', error);
-        // Don't show toast for loading errors to avoid spamming the user
+      if (error) {
+        console.error('Error saving dark mode preference:', error);
+        toast.error('Failed to save theme preference');
       }
-    };
+    } catch (error) {
+      console.error('Error saving dark mode preference:', error);
+      toast.error('Failed to save theme preference');
+    }
+  };
 
-    loadDarkModePreference();
-  }, [user?.id]); // Only reload when user ID changes
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    if (user) {
+      saveDarkModePreference(newTheme === 'dark');
+    }
+  };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={toggleDarkMode}
-      className="text-foreground hover:text-primary dark:text-foreground/90"
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="interactive-scale text-foreground hover:text-primary dark:text-foreground/90"
     >
-      {isDarkMode ? (
-        <Sun className="h-5 w-5" />
-      ) : (
+      {theme === 'dark' ? (
         <Moon className="h-5 w-5" />
+      ) : (
+        <Sun className="h-5 w-5" />
       )}
+      <span className="sr-only">Toggle theme</span>
     </Button>
   );
-};
+}
