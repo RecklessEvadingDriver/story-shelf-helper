@@ -12,7 +12,6 @@ import Admin from "./pages/Admin";
 import JoinClub from "./pages/JoinClub";
 import { StrictMode } from "react";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -24,7 +23,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BrowserRouter>
