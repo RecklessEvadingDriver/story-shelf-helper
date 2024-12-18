@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
 import { BookCard } from "@/components/BookCard";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
-      <Navbar />
       <HeroSection />
       
       <main className="container mx-auto px-4 py-12">
@@ -65,7 +63,7 @@ const Index = () => {
             {["Fiction", "Non-Fiction", "Science", "Technology", "Business", "Arts"].map((category) => (
               <div
                 key={category}
-                onClick={() => navigate(`/books?category=${category}`)}
+                onClick={() => navigate(`/books?category=${encodeURIComponent(category)}`)}
                 className="bg-secondary dark:bg-accent/10 rounded-lg p-6 text-center hover:bg-primary hover:text-white dark:hover:bg-accent transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm hover:shadow-md dark:text-foreground/90"
               >
                 <h3 className="font-semibold">{category}</h3>
