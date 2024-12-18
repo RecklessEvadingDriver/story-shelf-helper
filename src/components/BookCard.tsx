@@ -4,14 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 
 interface BookCardProps {
-  id: number;
+  id: string; // Changed from number to string to match Supabase type
   title: string;
   author: string;
   price: number;
-  imageUrl: string;
+  cover_image: string; // Changed from imageUrl to match Supabase type
 }
 
-export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) => {
+export const BookCard = ({ id, title, author, price, cover_image }: BookCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +19,7 @@ export const BookCard = ({ id, title, author, price, imageUrl }: BookCardProps) 
       <CardContent className="p-0">
         <div className="relative overflow-hidden aspect-[3/4]">
           <img
-            src={imageUrl}
+            src={cover_image}
             alt={`Cover of ${title} by ${author}`}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             loading="lazy"
