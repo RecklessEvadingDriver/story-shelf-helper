@@ -6,32 +6,32 @@ import { useNavigate } from "react-router-dom";
 // Mock data for featured books
 const featuredBooks = [
   {
-    id: 1,
+    id: "1",
     title: "The Great Gatsby",
     author: "F. Scott Fitzgerald",
     price: 19.99,
-    imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400",
+    cover_image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400",
   },
   {
-    id: 2,
+    id: "2",
     title: "To Kill a Mockingbird",
     author: "Harper Lee",
     price: 24.99,
-    imageUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=400",
+    cover_image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=400",
   },
   {
-    id: 3,
+    id: "3",
     title: "1984",
     author: "George Orwell",
     price: 21.99,
-    imageUrl: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=400",
+    cover_image: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=400",
   },
   {
-    id: 4,
+    id: "4",
     title: "Pride and Prejudice",
     author: "Jane Austen",
     price: 18.99,
-    imageUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400",
+    cover_image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400",
   },
 ];
 
