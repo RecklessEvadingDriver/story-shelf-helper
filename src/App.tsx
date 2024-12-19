@@ -8,23 +8,26 @@ import Cart from "@/pages/Cart";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import { Toaster } from "@/components/ui/toaster";
+import { CartProvider } from "@/contexts/CartContext";
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/books" element={<Books />} />
-        <Route path="/book/:id" element={<BookDetails />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin" element={<Admin />} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <CartProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/books" element={<Books />} />
+          <Route path="/book/:id" element={<BookDetails />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </CartProvider>
   );
 }
 

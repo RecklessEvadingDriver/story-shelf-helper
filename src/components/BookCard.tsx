@@ -2,17 +2,23 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 interface BookCardProps {
-  id: string; // Changed from number to string to match Supabase type
+  id: string;
   title: string;
   author: string;
   price: number;
-  cover_image: string; // Changed from imageUrl to match Supabase type
+  cover_image: string;
 }
 
 export const BookCard = ({ id, title, author, price, cover_image }: BookCardProps) => {
   const navigate = useNavigate();
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem({ id, title, author, price, cover_image });
+  };
 
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group animate-fadeIn bg-card dark:bg-card/95 dark:border-accent/20">
@@ -46,6 +52,7 @@ export const BookCard = ({ id, title, author, price, cover_image }: BookCardProp
         <Button
           className="w-full interactive-scale group-hover:bg-primary group-hover:text-primary-foreground transition-colors dark:border-accent/20"
           variant="outline"
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add to Cart

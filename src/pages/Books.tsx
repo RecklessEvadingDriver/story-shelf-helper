@@ -1,6 +1,5 @@
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { BookCard } from "@/components/BookCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,20 +11,23 @@ const Books = () => {
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", category, searchQuery],
     queryFn: async () => {
-      let query = supabase.from("books").select("*");
-
-      if (category) {
-        query = query.eq("category", category);
-      }
-
-      if (searchQuery) {
-        query = query.ilike("title", `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query;
+      let query = searchQuery || category || "programming";
+      const response = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+          query
+        )}&maxResults=40`
+      );
+      const data = await response.json();
       
-      if (error) throw error;
-      return data;
+      return data.items?.map((book: any) => ({
+        id: book.id,
+        title: book.volumeInfo.title,
+        author: book.volumeInfo.authors?.[0] || "Unknown Author",
+        price: book.saleInfo?.listPrice?.amount || 9.99,
+        cover_image: book.volumeInfo.imageLinks?.thumbnail || "/placeholder.svg",
+        description: book.volumeInfo.description,
+        category: book.volumeInfo.categories?.[0] || "Uncategorized",
+      })) || [];
     },
   });
 
