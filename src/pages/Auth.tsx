@@ -2,7 +2,6 @@ import { useState } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Button } from "@/components/ui/button";
-import { Navbar } from "@/components/Navbar";
 import { motion } from "framer-motion";
 
 const Auth = () => {
@@ -10,7 +9,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-md mx-auto">
           <motion.div 
