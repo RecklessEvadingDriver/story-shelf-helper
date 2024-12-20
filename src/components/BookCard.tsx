@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { useState } from "react";
 
@@ -88,9 +89,11 @@ export const BookCard = ({ id, title, author, price, cover_image, description }:
       </Card>
 
       <Dialog open={quickViewOpen} onOpenChange={setQuickViewOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-card-foreground">
+        <DialogContent className="sm:max-w-[425px] bg-background dark:bg-background text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-foreground">{title}</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-foreground">
+              {title}
+            </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               by {author}
             </DialogDescription>
@@ -108,7 +111,7 @@ export const BookCard = ({ id, title, author, price, cover_image, description }:
                 {description}
               </p>
             )}
-            <div className="flex justify-between items-center">
+            <DialogFooter className="flex justify-between items-center">
               <p className="text-lg font-bold text-primary dark:text-primary/90">
                 ${price.toFixed(2)}
               </p>
@@ -116,7 +119,7 @@ export const BookCard = ({ id, title, author, price, cover_image, description }:
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
-            </div>
+            </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>

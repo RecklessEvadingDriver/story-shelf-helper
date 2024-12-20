@@ -79,13 +79,13 @@ export function ThemeToggle() {
       size="icon"
       onClick={toggleTheme}
       className="interactive-scale text-foreground hover:text-primary dark:text-foreground/90"
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (
         <Moon className="h-5 w-5" />
       ) : (
         <Sun className="h-5 w-5" />
       )}
-      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }
