@@ -23,6 +23,7 @@ export const BookCard = ({ id, title, author, price, cover_image }: BookCardProp
     toast({
       title: "Added to cart",
       description: `${title} has been added to your cart`,
+      duration: 3000,
     });
   };
 
