@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const createProfile = async (userId: string) => {
+  const createProfile = async (userId: string, name: string) => {
     try {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           id: userId,
           dark_mode: false,
           updated_at: new Date().toISOString(),
+          full_name: name
         });
 
       if (profileError) {
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) throw error;
+      
       if (data.user) {
         setUser(data.user);
         navigate('/');
@@ -85,8 +87,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) throw error;
+      
       if (data.user) {
-        await createProfile(data.user.id);
+        await createProfile(data.user.id, name);
         setUser(data.user);
         navigate('/');
         toast.success("Successfully signed up!");
@@ -110,13 +113,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        createProfile(session.user.id);
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          await createProfile(session.user.id, session.user.user_metadata.full_name || '');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     const {
       data: { subscription },
@@ -124,7 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         setUser(session.user);
         if (event === 'SIGNED_IN') {
-          await createProfile(session.user.id);
+          await createProfile(session.user.id, session.user.user_metadata.full_name || '');
           navigate('/');
         }
       } else {
