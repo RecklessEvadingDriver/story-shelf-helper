@@ -3,12 +3,14 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-md mx-auto">
           <motion.div 
@@ -17,7 +19,7 @@ const Auth = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-8"
           >
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-4xl font-bold mb-4 text-foreground">
               {isLogin ? "Welcome Back" : "Join Our Community"}
             </h1>
             <p className="text-muted-foreground">
@@ -31,7 +33,7 @@ const Auth = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-card p-8 rounded-lg shadow-lg"
+            className="bg-card p-8 rounded-lg shadow-lg border border-border"
           >
             {isLogin ? <LoginForm /> : <RegisterForm />}
 
