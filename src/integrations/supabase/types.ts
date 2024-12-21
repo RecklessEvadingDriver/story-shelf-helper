@@ -120,6 +120,7 @@ export type Database = {
           dark_mode: boolean | null
           full_name: string | null
           id: string
+          role: string
           updated_at: string
         }
         Insert: {
@@ -127,6 +128,7 @@ export type Database = {
           dark_mode?: boolean | null
           full_name?: string | null
           id: string
+          role?: string
           updated_at?: string
         }
         Update: {
@@ -134,6 +136,7 @@ export type Database = {
           dark_mode?: boolean | null
           full_name?: string | null
           id?: string
+          role?: string
           updated_at?: string
         }
         Relationships: []
