@@ -2,10 +2,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  isAdmin: false,
   loading: true,
   signIn: async () => {},
   signUp: async () => {},
@@ -30,8 +32,24 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      setIsAdmin(profile?.role === 'admin');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const createProfile = async (userId: string, name: string) => {
     try {
@@ -39,18 +57,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from("profiles")
         .upsert({
           id: userId,
-          dark_mode: false,
+          full_name: name,
+          role: 'user',
           updated_at: new Date().toISOString(),
-          full_name: name
         });
 
       if (profileError) {
         console.error("Error creating profile:", profileError);
-        toast.error("Failed to create user profile");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create user profile",
+        });
       }
     } catch (error) {
       console.error("Error in profile creation:", error);
-      toast.error("Failed to create user profile");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create user profile",
+      });
     }
   };
 
@@ -65,8 +91,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data.user) {
         setUser(data.user);
+        await checkAdminStatus(data.user.id);
         navigate('/');
-        toast.success("Successfully signed in!");
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in.",
+        });
       }
     } catch (error) {
       console.error("Error signing in:", error);
@@ -91,8 +121,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user) {
         await createProfile(data.user.id, name);
         setUser(data.user);
+        setIsAdmin(false);
         navigate('/');
-        toast.success("Successfully signed up!");
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created successfully.",
+        });
       }
     } catch (error) {
       console.error("Error signing up:", error);
@@ -104,11 +138,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      toast.success("Signed out successfully");
+      setIsAdmin(false);
+      toast({
+        title: "Signed out",
+        description: "Successfully signed out.",
+      });
       navigate('/auth');
     } catch (error) {
       console.error("Error signing out:", error);
-      toast.error("Error signing out");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error signing out",
+      });
     }
   };
 
@@ -118,6 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setUser(session.user);
+          await checkAdminStatus(session.user.id);
           await createProfile(session.user.id, session.user.user_metadata.full_name || '');
         }
         setLoading(false);
@@ -134,12 +177,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
+        await checkAdminStatus(session.user.id);
         if (event === 'SIGNED_IN') {
           await createProfile(session.user.id, session.user.user_metadata.full_name || '');
           navigate('/');
         }
       } else {
         setUser(null);
+        setIsAdmin(false);
         if (event === 'SIGNED_OUT') {
           navigate('/auth');
         }
@@ -152,7 +197,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
