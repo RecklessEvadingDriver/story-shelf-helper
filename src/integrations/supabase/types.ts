@@ -141,6 +141,35 @@ export type Database = {
         }
         Relationships: []
       }
+      recently_viewed: {
+        Row: {
+          book_id: string
+          id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          book_id: string
+          id?: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          book_id?: string
+          id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           book_id: string

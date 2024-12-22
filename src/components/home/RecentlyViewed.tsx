@@ -16,13 +16,23 @@ export const RecentlyViewed = () => {
       if (!user) return [];
       
       const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .limit(4)
-        .order('created_at', { ascending: false });
+        .from('recently_viewed')
+        .select(`
+          books (
+            id,
+            title,
+            author,
+            price,
+            cover_image,
+            description
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('viewed_at', { ascending: false })
+        .limit(4);
       
       if (error) throw error;
-      return data;
+      return data?.map(item => item.books) || [];
     },
     enabled: !!user
   });
@@ -52,7 +62,15 @@ export const RecentlyViewed = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {books?.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard 
+            key={book.id}
+            id={book.id}
+            title={book.title}
+            author={book.author}
+            price={book.price}
+            cover_image={book.cover_image}
+            description={book.description}
+          />
         ))}
       </div>
     </section>

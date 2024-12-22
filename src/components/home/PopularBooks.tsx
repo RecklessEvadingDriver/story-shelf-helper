@@ -45,7 +45,15 @@ export const PopularBooks = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {books?.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard 
+            key={book.id}
+            id={book.id}
+            title={book.title}
+            author={book.author}
+            price={book.price}
+            cover_image={book.cover_image}
+            description={book.description}
+          />
         ))}
       </div>
     </section>
