@@ -58,15 +58,16 @@ export const Navbar = () => {
             <h1 className="text-2xl font-bold text-primary dark:text-primary/90">BookStore</h1>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
             {categories.slice(0, 4).map((category) => (
               <Button
                 key={category}
                 variant="ghost"
                 onClick={() => navigate(`/books?category=${category}`)}
-                className={`text-foreground hover:text-primary transition-colors duration-200 dark:text-foreground/90 dark:hover:text-primary ${
+                className={`text-foreground hover:text-primary transition-colors duration-200 dark:text-foreground/90 dark:hover:text-primary truncate max-w-[120px] ${
                   isActiveLink(`/books?category=${category}`) ? 'bg-accent text-accent-foreground' : ''
                 }`}
+                title={category}
               >
                 {category}
               </Button>

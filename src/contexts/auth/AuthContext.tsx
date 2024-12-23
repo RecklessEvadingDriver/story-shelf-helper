@@ -34,6 +34,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user) {
         const isAdminUser = await checkIsAdmin(data.user.id);
         setIsAdmin(isAdminUser);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
+        navigate(isAdminUser ? '/admin' : '/');
       }
     } catch (error: any) {
       toast({
@@ -59,6 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
       if (data.user) {
         await createProfile(data.user.id, name);
+        toast({
+          title: "Account created!",
+          description: "You can now sign in with your credentials.",
+        });
+        navigate('/auth');
       }
     } catch (error: any) {
       toast({
@@ -78,6 +88,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setIsAdmin(false);
       navigate('/auth');
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -113,25 +127,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAdmin(isAdminUser);
 
         if (event === 'SIGNED_IN') {
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully signed in.",
-          });
-          navigate('/');
+          navigate(isAdminUser ? '/admin' : '/');
         } else if (event === 'USER_UPDATED') {
-          toast({
-            title: "Welcome!",
-            description: "Your account has been created successfully.",
-          });
           navigate('/');
         }
-      } else if (event === 'SIGNED_OUT') {
-        setIsAdmin(false);
-        toast({
-          title: "Signed out",
-          description: "You have been signed out successfully.",
-        });
-        navigate('/auth');
       }
 
       setIsLoading(false);
