@@ -4,19 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { createProfile, checkIsAdmin } from "./useAuthOperations";
-
-interface AuthContextType {
-  session: Session | null;
-  user: User | null;
-  isAdmin: boolean;
-  isLoading: boolean;
-}
+import { AuthContextType } from "./types";
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   isAdmin: false,
   isLoading: true,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -26,6 +23,70 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      if (data.user) {
+        const isAdminUser = await checkIsAdmin(data.user.id);
+        setIsAdmin(isAdminUser);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error signing in",
+        description: error.message,
+      });
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, name: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data.user) {
+        await createProfile(data.user.id, name);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error signing up",
+        description: error.message,
+      });
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      navigate('/auth');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: error.message,
+      });
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -57,8 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             description: "You have successfully signed in.",
           });
           navigate('/');
-        } else if (event === 'SIGNED_UP') {
-          await createProfile(session.user.id, session.user.user_metadata.full_name || '');
+        } else if (event === 'USER_UPDATED') {
           toast({
             title: "Welcome!",
             description: "Your account has been created successfully.",
@@ -83,7 +143,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [navigate, toast]);
 
   return (
-    <AuthContext.Provider value={{ session, user, isAdmin, isLoading }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      isAdmin, 
+      isLoading, 
+      signIn, 
+      signUp, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );
