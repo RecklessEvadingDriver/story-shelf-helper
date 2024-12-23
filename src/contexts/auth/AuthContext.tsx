@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             title: "Welcome back!",
             description: "You have successfully signed in.",
           });
-        } else if (event === 'SIGNED_UP') {
+        } else if (event === 'USER_UPDATED') {
           await createProfile(session.user.id, session.user.user_metadata.full_name || '');
           navigate('/');
           toast({

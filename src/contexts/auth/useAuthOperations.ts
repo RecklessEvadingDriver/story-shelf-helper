@@ -91,6 +91,11 @@ export const useAuthOperations = () => {
         await createProfile(data.user.id, name);
         setUser(data.user);
         setIsAdmin(false);
+        navigate('/');
+        toast({
+          title: "Account created!",
+          description: "Please check your email to confirm your registration.",
+        });
       }
     } catch (error: any) {
       console.error("Error signing up:", error);
