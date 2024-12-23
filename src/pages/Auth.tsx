@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,13 +12,21 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState("login");
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -72,13 +79,13 @@ const Auth = () => {
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>
                 By continuing, you agree to our{" "}
-                <Button variant="link" className="p-0 h-auto font-normal">
+                <button className="text-primary hover:underline">
                   Terms of Service
-                </Button>{" "}
+                </button>{" "}
                 and{" "}
-                <Button variant="link" className="p-0 h-auto font-normal">
+                <button className="text-primary hover:underline">
                   Privacy Policy
-                </Button>
+                </button>
               </p>
             </div>
           </div>

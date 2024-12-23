@@ -13,15 +13,21 @@ export const useAuthOperations = () => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single();
       
+      if (error) throw error;
       setIsAdmin(profile?.role === 'admin');
     } catch (error) {
       console.error('Error checking admin status:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to check admin status.",
+      });
     }
   };
 
@@ -36,20 +42,13 @@ export const useAuthOperations = () => {
           updated_at: new Date().toISOString(),
         });
 
-      if (profileError) {
-        console.error("Error creating profile:", profileError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to create user profile",
-        });
-      }
+      if (profileError) throw profileError;
     } catch (error) {
       console.error("Error in profile creation:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create user profile",
+        description: "Failed to create user profile. Please try again.",
       });
     }
   };
@@ -67,14 +66,10 @@ export const useAuthOperations = () => {
         setUser(data.user);
         await checkAdminStatus(data.user.id);
         navigate('/');
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in.",
-        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing in:", error);
-      throw error;
+      throw new Error(error.message || "Failed to sign in");
     }
   };
 
@@ -96,34 +91,27 @@ export const useAuthOperations = () => {
         await createProfile(data.user.id, name);
         setUser(data.user);
         setIsAdmin(false);
-        navigate('/');
-        toast({
-          title: "Welcome!",
-          description: "Your account has been created successfully.",
-        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing up:", error);
-      throw error;
+      throw new Error(error.message || "Failed to create account");
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       setUser(null);
       setIsAdmin(false);
-      toast({
-        title: "Signed out",
-        description: "Successfully signed out.",
-      });
       navigate('/auth');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing out:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Error signing out",
+        description: error.message || "Error signing out",
       });
     }
   };
