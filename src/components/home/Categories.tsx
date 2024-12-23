@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Bookmark, GraduationCap, Brain, Briefcase, Palette } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Categories = () => {
   const navigate = useNavigate();
@@ -16,31 +17,41 @@ export const Categories = () => {
 
   return (
     <section 
-      className="py-12 bg-secondary/50 dark:bg-secondary/5" 
+      className="py-16 bg-gradient-to-b from-secondary/30 to-background dark:from-secondary/5 dark:to-background"
       aria-labelledby="categories-heading"
     >
       <div className="container mx-auto px-4">
-        <h2 
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           id="categories-heading" 
-          className="text-3xl font-bold mb-8 text-center text-foreground dark:text-foreground/90"
+          className="text-3xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
         >
           Explore Our Collections
-        </h2>
+        </motion.h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {categories.map((category) => (
-            <Button
+          {categories.map((category, index) => (
+            <motion.div
               key={category.name}
-              variant="outline"
-              className="h-auto py-6 flex flex-col gap-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300 interactive-scale dark:border-accent/20 dark:hover:bg-primary/90"
-              onClick={() => navigate(`/books?category=${category.name}`)}
-              aria-label={`Browse ${category.name} books`}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
             >
-              <category.icon className={`h-8 w-8 ${category.color}`} aria-hidden="true" />
-              <span className="font-medium text-foreground dark:text-foreground/90">{category.name}</span>
-              <p className="text-xs text-muted-foreground dark:text-muted-foreground/80 line-clamp-2 px-2">
-                {category.description}
-              </p>
-            </Button>
+              <Button
+                variant="outline"
+                className="w-full h-auto py-6 flex flex-col gap-2 hover:bg-primary/5 hover:border-primary transition-all duration-300 group dark:border-accent/20"
+                onClick={() => navigate(`/books?category=${category.name}`)}
+                aria-label={`Browse ${category.name} books`}
+              >
+                <category.icon className={`h-8 w-8 ${category.color} transition-transform duration-300 group-hover:scale-110`} aria-hidden="true" />
+                <span className="font-medium text-foreground dark:text-foreground/90">{category.name}</span>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground/80 line-clamp-2 px-2">
+                  {category.description}
+                </p>
+              </Button>
+            </motion.div>
           ))}
         </div>
       </div>

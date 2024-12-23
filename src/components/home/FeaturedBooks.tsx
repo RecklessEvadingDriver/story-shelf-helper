@@ -26,14 +26,14 @@ export const FeaturedBooks = () => {
   };
 
   return (
-    <section className="py-20 bg-secondary/30 dark:bg-secondary/5">
+    <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <motion.h2 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold tracking-tight"
+            className="text-3xl md:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
           >
             Featured Books
           </motion.h2>
@@ -44,7 +44,7 @@ export const FeaturedBooks = () => {
           >
             <Button
               variant="ghost"
-              className="group"
+              className="group hover:bg-primary/5"
               onClick={() => navigate("/books")}
             >
               View All
@@ -72,7 +72,7 @@ export const FeaturedBooks = () => {
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
           >
             {books?.slice(0, 4).map((book) => (
-              <motion.div key={book.id} variants={item}>
+              <motion.div key={book.id} variants={item} className="transform transition-all duration-300 hover:-translate-y-1">
                 <BookCard {...book} />
               </motion.div>
             ))}

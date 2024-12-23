@@ -4,19 +4,24 @@ import { FeaturedBooks } from "@/components/home/FeaturedBooks";
 import { Newsletter } from "@/components/home/Newsletter";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
 import { PopularBooks } from "@/components/home/PopularBooks";
+import { motion } from "framer-motion";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-background"
+    >
       <HeroSection />
-      <div className="container mx-auto px-4 space-y-16 py-8">
+      <div className="space-y-0">
         <Categories />
         <FeaturedBooks />
         <PopularBooks />
         <RecentlyViewed />
         <Newsletter />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
