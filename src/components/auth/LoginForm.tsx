@@ -44,12 +44,14 @@ export const LoginForm = () => {
     
     try {
       setIsLoading(true);
+      console.log("Attempting to sign in with:", values.email);
       const result = await signIn(values.email, values.password);
       
       if (!result) {
         throw new Error("Invalid credentials");
       }
 
+      console.log("Sign in successful:", result);
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
