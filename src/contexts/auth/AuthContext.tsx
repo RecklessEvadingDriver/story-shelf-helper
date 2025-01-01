@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await createProfile(data.user.id, name);
         toast({
           title: "Account created!",
-          description: "You can now sign in with your credentials.",
+          description: "Please verify your email to continue.",
         });
         navigate('/auth');
       }
@@ -117,7 +117,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(true);
@@ -139,7 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ 
