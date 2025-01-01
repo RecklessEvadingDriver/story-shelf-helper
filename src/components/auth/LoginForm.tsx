@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -40,23 +40,29 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
+    if (isLoading) return;
+    
     try {
       setIsLoading(true);
       const result = await signIn(values.email, values.password);
       
-      if (result) {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-        navigate(result.isAdmin ? '/admin' : '/');
+      if (!result) {
+        throw new Error("Invalid credentials");
       }
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+      
+      // Navigate based on user role
+      navigate(result.isAdmin ? '/admin' : '/');
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message || "Invalid credentials. Please try again.",
+        title: "Error signing in",
+        description: error.message || "Please check your credentials and try again.",
       });
     } finally {
       setIsLoading(false);
