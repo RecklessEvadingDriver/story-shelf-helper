@@ -24,8 +24,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    console.log("AuthProvider mounted");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkIsAdmin(session.user.id).then(setIsAdmin);
+      }
+      setIsLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Auth state changed:", _event, session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const isAdminUser = await checkIsAdmin(session.user.id);
+        setIsAdmin(isAdminUser);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("Attempting sign in with email:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -33,22 +66,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) throw error;
 
-      if (data.user) {
+      if (data?.user) {
         const isAdminUser = await checkIsAdmin(data.user.id);
-        setIsAdmin(isAdminUser);
-        setUser(data.user);
-        setSession(data.session);
+        console.log("Sign in successful:", { user: data.user, isAdmin: isAdminUser });
         return { user: data.user, isAdmin: isAdminUser };
       }
       return null;
     } catch (error: any) {
       console.error("Error signing in:", error);
-      throw error;
+      toast({
+        title: "Error signing in",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
     }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      console.log("Attempting sign up with email:", email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -61,17 +98,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) throw error;
 
-      if (data.user) {
+      if (data?.user) {
         await createProfile(data.user.id, name);
+        console.log("Sign up successful:", data.user);
         toast({
           title: "Account created!",
-          description: "Please verify your email to continue.",
+          description: "Please check your email to confirm your registration.",
         });
         navigate('/auth');
       }
     } catch (error: any) {
       console.error("Error signing up:", error);
-      throw error;
+      toast({
+        title: "Error signing up",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -91,40 +133,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } catch (error: any) {
       console.error("Error signing out:", error);
-      throw error;
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkIsAdmin(session.user.id).then(setIsAdmin);
-      }
-      setIsLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(true);
-
-      if (session?.user) {
-        const isAdminUser = await checkIsAdmin(session.user.id);
-        setIsAdmin(isAdminUser);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <AuthContext.Provider value={{ 
