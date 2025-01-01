@@ -15,6 +15,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -28,6 +29,7 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -38,19 +40,23 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
-    setIsLoading(true);
     try {
-      await signIn(values.email, values.password);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-    } catch (error) {
+      setIsLoading(true);
+      const result = await signIn(values.email, values.password);
+      
+      if (result) {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+        navigate(result.isAdmin ? '/admin' : '/');
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -74,6 +80,7 @@ export const LoginForm = () => {
                     placeholder="Email address"
                     className="pl-10 h-12 text-base"
                     autoComplete="email"
+                    disabled={isLoading}
                   />
                 </FormControl>
               </div>
@@ -96,6 +103,7 @@ export const LoginForm = () => {
                     placeholder="Password"
                     className="pl-10 pr-10 h-12 text-base"
                     autoComplete="current-password"
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <Button
@@ -104,6 +112,7 @@ export const LoginForm = () => {
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -162,6 +171,7 @@ export const LoginForm = () => {
             type="button"
             variant="link"
             className="p-0 h-auto text-muted-foreground hover:text-primary"
+            disabled={isLoading}
           >
             Forgot password?
           </Button>

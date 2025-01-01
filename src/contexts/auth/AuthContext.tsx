@@ -11,7 +11,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isAdmin: false,
   isLoading: true,
-  signIn: async () => {},
+  signIn: async () => null,
   signUp: async () => {},
   signOut: async () => {},
 });
@@ -30,22 +30,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
       });
+      
       if (error) throw error;
+
       if (data.user) {
         const isAdminUser = await checkIsAdmin(data.user.id);
         setIsAdmin(isAdminUser);
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        navigate(isAdminUser ? '/admin' : '/');
+        setUser(data.user);
+        setSession(data.session);
+        return { user: data.user, isAdmin: isAdminUser };
       }
+      return null;
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing in",
-        description: error.message,
-      });
+      console.error("Error signing in:", error);
       throw error;
     }
   };
@@ -61,7 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       });
+      
       if (error) throw error;
+
       if (data.user) {
         await createProfile(data.user.id, name);
         toast({
@@ -71,11 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         navigate('/auth');
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing up",
-        description: error.message,
-      });
+      console.error("Error signing up:", error);
       throw error;
     }
   };
@@ -84,26 +79,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
       setUser(null);
       setSession(null);
       setIsAdmin(false);
       navigate('/auth');
+      
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message,
-      });
+      console.error("Error signing out:", error);
       throw error;
     }
   };
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -113,7 +105,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -124,12 +115,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         const isAdminUser = await checkIsAdmin(session.user.id);
         setIsAdmin(isAdminUser);
-
-        if (event === 'SIGNED_IN') {
-          navigate(isAdminUser ? '/admin' : '/');
-        } else if (event === 'USER_UPDATED') {
-          navigate('/');
-        }
       }
 
       setIsLoading(false);
@@ -138,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 
