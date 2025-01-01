@@ -3,39 +3,93 @@ import { useQuery } from "@tanstack/react-query";
 import { BookCard } from "@/components/BookCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchBar } from "@/components/SearchBar";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Books = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category");
   const searchQuery = searchParams.get("search");
+  const { toast } = useToast();
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", category, searchQuery],
     queryFn: async () => {
-      let query = searchQuery || category || "programming";
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-          query
-        )}&maxResults=40`
-      );
-      const data = await response.json();
-      
-      return data.items?.map((book: any) => ({
-        id: book.id,
-        title: book.volumeInfo.title,
-        author: book.volumeInfo.authors?.[0] || "Unknown Author",
-        price: book.saleInfo?.listPrice?.amount || 9.99,
-        cover_image: book.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || "/placeholder.svg",
-        description: book.volumeInfo.description,
-        category: book.volumeInfo.categories?.[0] || "Uncategorized",
-        publisher: book.volumeInfo.publisher,
-        publishedDate: book.volumeInfo.publishedDate,
-        pageCount: book.volumeInfo.pageCount,
-        averageRating: book.volumeInfo.averageRating,
-        ratingsCount: book.volumeInfo.ratingsCount,
-        previewLink: book.volumeInfo.previewLink,
-      })) || [];
+      // First try to get books from Supabase
+      const query = searchQuery || category || "programming";
+      let { data: supabaseBooks, error: supabaseError } = await supabase
+        .from('books')
+        .select('*')
+        .or(`title.ilike.%${query}%,category.ilike.%${query}%,author.ilike.%${query}%`)
+        .limit(40);
+
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+      }
+
+      // If we have results from Supabase, return them
+      if (supabaseBooks && supabaseBooks.length > 0) {
+        return supabaseBooks;
+      }
+
+      // If no results from Supabase, try Google Books API
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+            query
+          )}&maxResults=40`
+        );
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            toast({
+              title: "API Limit Reached",
+              description: "We're experiencing high traffic. Please try again later or browse our existing collection.",
+              variant: "destructive",
+            });
+            // Return empty array to prevent further API calls
+            return [];
+          }
+          throw new Error(`Google Books API error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const googleBooks = data.items?.map((book: any) => ({
+          id: book.id,
+          title: book.volumeInfo.title,
+          author: book.volumeInfo.authors?.[0] || "Unknown Author",
+          price: book.saleInfo?.listPrice?.amount || 9.99,
+          cover_image: book.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || "/placeholder.svg",
+          description: book.volumeInfo.description,
+          category: book.volumeInfo.categories?.[0] || "Uncategorized",
+        })) || [];
+
+        // Store fetched books in Supabase for future use
+        if (googleBooks.length > 0) {
+          const { error: insertError } = await supabase
+            .from('books')
+            .upsert(googleBooks, { 
+              onConflict: 'id',
+              ignoreDuplicates: true 
+            });
+
+          if (insertError) {
+            console.error('Error storing books:', insertError);
+          }
+        }
+
+        return googleBooks;
+      } catch (error) {
+        console.error('Error fetching books:', error);
+        toast({
+          title: "Error fetching books",
+          description: "Please try again later or browse our existing collection.",
+          variant: "destructive",
+        });
+        return [];
+      }
     },
+    retry: false,
   });
 
   return (
