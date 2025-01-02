@@ -42,8 +42,10 @@ export const LoginForm = () => {
   const onSubmit = async (values: LoginFormValues) => {
     if (isLoading) return;
     
+    console.log("Starting login process...");
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
       console.log("Attempting to sign in with:", values.email);
       const result = await signIn(values.email, values.password);
       
@@ -57,14 +59,15 @@ export const LoginForm = () => {
         description: "You have successfully logged in.",
       });
       
-      // Navigate based on user role
       navigate(result.isAdmin ? '/admin' : '/');
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Error signing in",
-        description: error.message || "Please check your credentials and try again.",
+        title: "Login failed",
+        description: error.message === "Invalid credentials" 
+          ? "Invalid email or password. Please try again."
+          : "An error occurred during login. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -72,119 +75,121 @@ export const LoginForm = () => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="Email address"
-                    className="pl-10 h-12 text-base"
-                    autoComplete="email"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    {...field}
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    className="pl-10 pr-10 h-12 text-base"
-                    autoComplete="current-password"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={showPassword ? "hide" : "show"}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                </Button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button
-          type="submit"
-          className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
-          disabled={isLoading}
-        >
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center space-x-2"
-              >
-                <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                <span>Signing in...</span>
-              </motion.div>
-            ) : (
-              <motion.span
-                key="sign-in"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                Sign In
-              </motion.span>
+    <div className="w-full max-w-md mx-auto space-y-6 p-4 sm:p-6 lg:p-8 bg-background/60 backdrop-blur-lg rounded-lg shadow-lg">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="Email address"
+                      className="pl-10 h-12 text-base"
+                      autoComplete="email"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
             )}
-          </AnimatePresence>
-        </Button>
+          />
 
-        <div className="flex items-center justify-between text-sm">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      className="pl-10 pr-10 h-12 text-base"
+                      autoComplete="current-password"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={showPassword ? "hide" : "show"}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <Button
-            type="button"
-            variant="link"
-            className="p-0 h-auto text-muted-foreground hover:text-primary"
+            type="submit"
+            className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
             disabled={isLoading}
           >
-            Forgot password?
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center space-x-2"
+                >
+                  <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <span>Signing in...</span>
+                </motion.div>
+              ) : (
+                <motion.span
+                  key="sign-in"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  Sign In
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Button>
-        </div>
-      </form>
-    </Form>
+
+          <div className="flex items-center justify-between text-sm">
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-muted-foreground hover:text-primary"
+              disabled={isLoading}
+            >
+              Forgot password?
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };

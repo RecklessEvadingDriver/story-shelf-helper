@@ -11,7 +11,9 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Auth page mounted, user:", user, "isLoading:", isLoading);
     if (user && !isLoading) {
+      console.log("Redirecting authenticated user to home");
       navigate('/');
     }
   }, [user, isLoading, navigate]);
@@ -21,10 +23,10 @@ const Auth = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-8"
+        className="w-full max-w-md"
       >
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-foreground dark:text-foreground/90">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-foreground dark:text-foreground/90">
             Welcome to BookStore
           </h2>
           <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground/80">
@@ -33,12 +35,12 @@ const Auth = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center p-8">
             <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
