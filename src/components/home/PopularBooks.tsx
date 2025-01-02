@@ -43,7 +43,9 @@ export const PopularBooks = () => {
     return (
       <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Popular Books</h2>
+          <h2 className="text-3xl font-bold mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+            Popular Books
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-4">
@@ -85,7 +87,7 @@ export const PopularBooks = () => {
               View All
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
-          </div>
+          </motion.div>
         </div>
         <motion.div 
           variants={container}
