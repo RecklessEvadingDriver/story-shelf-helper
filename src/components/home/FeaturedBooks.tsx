@@ -1,5 +1,6 @@
-import { useSearchBooks } from "@/services/bookApi";
+import { useQuery } from "@tanstack/react-query";
 import { BookCard } from "@/components/BookCard";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
 export const FeaturedBooks = () => {
-  const { data: books, isLoading } = useSearchBooks("bestseller");
+  const { data: books, isLoading } = useQuery({
+    queryKey: ['featured-books'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('category', 'Bestsellers')
+        .limit(4);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const navigate = useNavigate();
 
   const container = {
@@ -54,7 +68,7 @@ export const FeaturedBooks = () => {
         </div>
         
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-4">
                 <Skeleton className="h-[400px] w-full rounded-lg" />
@@ -69,10 +83,14 @@ export const FeaturedBooks = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           >
-            {books?.slice(0, 4).map((book) => (
-              <motion.div key={book.id} variants={item} className="transform transition-all duration-300 hover:-translate-y-1">
+            {books?.map((book) => (
+              <motion.div 
+                key={book.id} 
+                variants={item}
+                className="transform transition-all duration-300 hover:-translate-y-1"
+              >
                 <BookCard {...book} />
               </motion.div>
             ))}
