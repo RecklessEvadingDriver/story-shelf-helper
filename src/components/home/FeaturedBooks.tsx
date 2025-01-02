@@ -1,14 +1,28 @@
-import { useSearchBooks } from "@/services/bookApi";
+import { useQuery } from "@tanstack/react-query";
 import { BookCard } from "@/components/BookCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 export const FeaturedBooks = () => {
-  const { data: books, isLoading } = useSearchBooks("bestseller");
   const navigate = useNavigate();
+
+  const { data: books, isLoading } = useQuery({
+    queryKey: ['featured-books'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .limit(4)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const container = {
     hidden: { opacity: 0 },
@@ -24,6 +38,29 @@ export const FeaturedBooks = () => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+            Featured Books
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="h-[400px] w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!books?.length) return null;
 
   return (
     <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
@@ -52,32 +89,23 @@ export const FeaturedBooks = () => {
             </Button>
           </motion.div>
         </div>
-        
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="h-[400px] w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <motion.div 
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
-          >
-            {books?.slice(0, 4).map((book) => (
-              <motion.div key={book.id} variants={item} className="transform transition-all duration-300 hover:-translate-y-1">
-                <BookCard {...book} />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
+        >
+          {books?.map((book) => (
+            <motion.div 
+              key={book.id} 
+              variants={item}
+              className="transform transition-all duration-300 hover:-translate-y-1"
+            >
+              <BookCard {...book} />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
