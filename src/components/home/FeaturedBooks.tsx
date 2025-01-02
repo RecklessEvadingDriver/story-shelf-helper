@@ -1,4 +1,4 @@
-import { useSearchBooks } from "@/services/bookApi";
+import { useQuery } from "@tanstack/react-query";
 import { BookCard } from "@/components/BookCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -6,48 +6,34 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 
 export const FeaturedBooks = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // First try to get featured books from Supabase
-  const { data: books, isLoading } = useQuery({
+  const { data: books, isLoading, error } = useQuery({
     queryKey: ['featured-books'],
     queryFn: async () => {
-      const { data: supabaseBooks, error } = await supabase
+      console.log('Fetching featured books...');
+      const { data, error } = await supabase
         .from('books')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(4);
 
       if (error) {
-        console.error('Error fetching featured books:', error);
-        // Fallback to Google Books API
-        const googleBooksResponse = await fetch(
-          `https://www.googleapis.com/books/v1/volumes?q=bestseller&maxResults=4`
-        );
-        
-        if (!googleBooksResponse.ok) {
-          if (googleBooksResponse.status === 429) {
-            return [];
-          }
-          throw new Error('Failed to fetch books');
-        }
-
-        const data = await googleBooksResponse.json();
-        return data.items?.map((book: any) => ({
-          id: book.id,
-          title: book.volumeInfo.title,
-          author: book.volumeInfo.authors?.[0] || "Unknown Author",
-          price: book.saleInfo?.listPrice?.amount || 9.99,
-          cover_image: book.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || "/placeholder.svg",
-          description: book.volumeInfo.description,
-          category: book.volumeInfo.categories?.[0] || "General",
-        })) || [];
+        console.error('Error fetching books:', error);
+        toast({
+          title: "Error loading books",
+          description: "There was a problem loading the featured books. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
       }
 
-      return supabaseBooks;
+      console.log('Fetched books:', data);
+      return data;
     },
   });
 
@@ -66,6 +52,18 @@ export const FeaturedBooks = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  if (error) {
+    return (
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <p className="text-red-500">Failed to load featured books. Please try again later.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (isLoading) {
     return (
       <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
@@ -73,7 +71,7 @@ export const FeaturedBooks = () => {
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Featured Books</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-4">
                 <Skeleton className="h-[400px] w-full rounded-lg" />
@@ -88,7 +86,15 @@ export const FeaturedBooks = () => {
   }
 
   if (!books?.length) {
-    return null;
+    return (
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <p className="text-muted-foreground">No featured books available at the moment.</p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -126,7 +132,7 @@ export const FeaturedBooks = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
         >
-          {books?.map((book) => (
+          {books.map((book) => (
             <motion.div 
               key={book.id} 
               variants={item}
