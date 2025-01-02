@@ -15,10 +15,10 @@ export const PopularBooks = () => {
   const { data: books, isLoading, error } = useQuery({
     queryKey: ['popular-books'],
     queryFn: async () => {
-      console.log('Fetching popular books...');
       const { data, error } = await supabase
         .from('books')
         .select('*')
+        .order('created_at', { ascending: false })
         .limit(4);
       
       if (error) {
@@ -31,7 +31,12 @@ export const PopularBooks = () => {
         throw error;
       }
 
-      console.log('Fetched popular books:', data);
+      if (!data || data.length === 0) {
+        console.log('No popular books found');
+      } else {
+        console.log('Fetched popular books:', data);
+      }
+
       return data;
     }
   });
@@ -82,18 +87,6 @@ export const PopularBooks = () => {
     );
   }
 
-  if (!books?.length) {
-    return (
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-muted-foreground">No popular books available at the moment.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
       <div className="container mx-auto px-4">
@@ -128,15 +121,21 @@ export const PopularBooks = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
         >
-          {books?.map((book) => (
-            <motion.div 
-              key={book.id} 
-              variants={item}
-              className="transform transition-all duration-300 hover:-translate-y-1"
-            >
-              <BookCard {...book} />
-            </motion.div>
-          ))}
+          {books && books.length > 0 ? (
+            books.map((book) => (
+              <motion.div 
+                key={book.id} 
+                variants={item}
+                className="transform transition-all duration-300 hover:-translate-y-1"
+              >
+                <BookCard {...book} />
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-muted-foreground">
+              No popular books available at the moment.
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
