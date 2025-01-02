@@ -1,78 +1,85 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-export const createProfile = async (userId: string, name: string) => {
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          id: userId,
-          full_name: name,
-          role: 'user'
-        }
-      ]);
-
-    if (error) throw error;
-  } catch (error) {
-    console.error("Error creating profile:", error);
-    throw error;
-  }
-};
-
-export const checkIsAdmin = async (userId: string): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    if (error) throw error;
-    return data?.role === 'admin';
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    return false;
-  }
-};
+import { useNavigate } from "react-router-dom";
 
 export const useAuthOperations = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      setIsAdmin(profile?.role === 'admin');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
+
+  const createProfile = async (userId: string, name: string) => {
+    try {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: userId,
+          full_name: name,
+          role: 'user',
+          updated_at: new Date().toISOString(),
+        });
+
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create user profile",
+        });
+      }
+    } catch (error) {
+      console.error("Error in profile creation:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create user profile",
+      });
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-
-      if (data?.user) {
-        const isAdminUser = await checkIsAdmin(data.user.id);
-        return { user: data.user, isAdmin: isAdminUser };
+      
+      if (data.user) {
+        setUser(data.user);
+        await checkAdminStatus(data.user.id);
+        navigate('/');
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in.",
+        });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error signing in:", error);
-      toast({
-        title: "Error signing in",
-        description: error.message,
-        variant: "destructive",
-      });
-      return null;
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -84,48 +91,53 @@ export const useAuthOperations = () => {
       });
 
       if (error) throw error;
-
-      if (data?.user) {
+      
+      if (data.user) {
         await createProfile(data.user.id, name);
+        setUser(data.user);
+        setIsAdmin(false);
+        navigate('/');
         toast({
-          title: "Account created!",
-          description: "Please check your email to confirm your registration.",
+          title: "Welcome!",
+          description: "Your account has been created successfully.",
         });
-        navigate('/auth');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error signing up:", error);
-      toast({
-        title: "Error signing up",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error: any) {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAdmin(false);
+      toast({
+        title: "Signed out",
+        description: "Successfully signed out.",
+      });
+      navigate('/auth');
+    } catch (error) {
       console.error("Error signing out:", error);
       toast({
-        title: "Error signing out",
-        description: error.message,
         variant: "destructive",
+        title: "Error",
+        description: "Error signing out",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return {
+    user,
+    setUser,
+    isAdmin,
+    loading,
+    setLoading,
     signIn,
     signUp,
     signOut,
-    isLoading,
+    checkAdminStatus,
+    createProfile,
   };
 };

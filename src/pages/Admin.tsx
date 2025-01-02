@@ -8,16 +8,16 @@ import { RevenueStats } from "@/components/admin/RevenueStats";
 import { Loader2 } from "lucide-react";
 
 const Admin = () => {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && (!user || !isAdmin)) {
+    if (!loading && (!user || !isAdmin)) {
       navigate("/");
     }
-  }, [user, isAdmin, isLoading, navigate]);
+  }, [user, isAdmin, loading, navigate]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

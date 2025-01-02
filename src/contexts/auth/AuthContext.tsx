@@ -1,160 +1,16 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { createProfile, checkIsAdmin } from "./useAuthOperations";
-import { AuthContextType } from "./types";
+import { AuthContextType, AuthProviderProps } from "./types";
+import { useAuthOperations } from "./useAuthOperations";
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
   user: null,
   isAdmin: false,
-  isLoading: true,
+  loading: true,
   signIn: async () => {},
   signUp: async () => {},
   signOut: async () => {},
 });
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      if (data.user) {
-        const isAdminUser = await checkIsAdmin(data.user.id);
-        setIsAdmin(isAdminUser);
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        navigate(isAdminUser ? '/admin' : '/');
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing in",
-        description: error.message,
-      });
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string, name: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
-      });
-      if (error) throw error;
-      if (data.user) {
-        await createProfile(data.user.id, name);
-        toast({
-          title: "Account created!",
-          description: "You can now sign in with your credentials.",
-        });
-        navigate('/auth');
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing up",
-        description: error.message,
-      });
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
-      navigate('/auth');
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message,
-      });
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkIsAdmin(session.user.id).then(setIsAdmin);
-      }
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(true);
-
-      if (session?.user) {
-        const isAdminUser = await checkIsAdmin(session.user.id);
-        setIsAdmin(isAdminUser);
-
-        if (event === 'SIGNED_IN') {
-          navigate(isAdminUser ? '/admin' : '/');
-        } else if (event === 'USER_UPDATED') {
-          navigate('/');
-        }
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  return (
-    <AuthContext.Provider value={{ 
-      session, 
-      user, 
-      isAdmin, 
-      isLoading, 
-      signIn, 
-      signUp, 
-      signOut 
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -162,4 +18,62 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+};
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const {
+    user,
+    setUser,
+    isAdmin,
+    loading,
+    setLoading,
+    signIn,
+    signUp,
+    signOut,
+    checkAdminStatus,
+    createProfile,
+  } = useAuthOperations();
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          await checkAdminStatus(session.user.id);
+          await createProfile(session.user.id, session.user.user_metadata.full_name || '');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        await checkAdminStatus(session.user.id);
+        if (event === 'SIGNED_IN') {
+          await createProfile(session.user.id, session.user.user_metadata.full_name || '');
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, isAdmin, loading, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
