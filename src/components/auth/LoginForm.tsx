@@ -41,19 +41,15 @@ export const LoginForm = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     if (isLoading) return;
-    
-    console.log("Starting login process...");
     setIsLoading(true);
     
     try {
-      console.log("Attempting to sign in with:", values.email);
       const result = await signIn(values.email, values.password);
       
       if (!result) {
         throw new Error("Invalid credentials");
       }
 
-      console.log("Sign in successful:", result);
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
@@ -75,7 +71,12 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6 p-4 sm:p-6 lg:p-8 bg-background/60 backdrop-blur-lg rounded-lg shadow-lg">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="w-full space-y-6 p-6 bg-card rounded-lg shadow-lg border border-border/50"
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -90,7 +91,7 @@ export const LoginForm = () => {
                       {...field}
                       type="email"
                       placeholder="Email address"
-                      className="pl-10 h-12 text-base"
+                      className="pl-10 h-12 text-base bg-background"
                       autoComplete="email"
                       disabled={isLoading}
                     />
@@ -113,7 +114,7 @@ export const LoginForm = () => {
                       {...field}
                       type={showPassword ? "text" : "password"}
                       placeholder="Password"
-                      className="pl-10 pr-10 h-12 text-base"
+                      className="pl-10 pr-10 h-12 text-base bg-background"
                       autoComplete="current-password"
                       disabled={isLoading}
                     />
@@ -190,6 +191,6 @@ export const LoginForm = () => {
           </div>
         </form>
       </Form>
-    </div>
+    </motion.div>
   );
 };
