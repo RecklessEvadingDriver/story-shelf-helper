@@ -6,12 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const FeaturedBooks = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  
   const { data: books, isLoading, error } = useQuery({
     queryKey: ['featured-books'],
     queryFn: async () => {
@@ -19,9 +19,8 @@ export const FeaturedBooks = () => {
       const { data, error } = await supabase
         .from('books')
         .select('*')
-        .order('created_at', { ascending: false })
         .limit(4);
-
+      
       if (error) {
         console.error('Error fetching books:', error);
         toast({
@@ -34,7 +33,7 @@ export const FeaturedBooks = () => {
 
       console.log('Fetched books:', data);
       return data;
-    },
+    }
   });
 
   const container = {

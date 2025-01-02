@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const PopularBooks = () => {
   const navigate = useNavigate();
@@ -19,7 +19,6 @@ export const PopularBooks = () => {
       const { data, error } = await supabase
         .from('books')
         .select('*')
-        .order('created_at', { ascending: false })
         .limit(4);
       
       if (error) {
