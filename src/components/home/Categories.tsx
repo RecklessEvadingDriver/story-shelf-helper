@@ -7,12 +7,12 @@ export const Categories = () => {
   const navigate = useNavigate();
   
   const categories = [
-    { name: "Fiction", icon: BookOpen, color: "text-violet-500 dark:text-violet-400", description: "Immerse yourself in captivating stories" },
-    { name: "Non-Fiction", icon: Brain, color: "text-blue-500 dark:text-blue-400", description: "Expand your knowledge" },
-    { name: "Science", icon: GraduationCap, color: "text-green-500 dark:text-green-400", description: "Explore scientific discoveries" },
-    { name: "Technology", icon: Bookmark, color: "text-red-500 dark:text-red-400", description: "Stay ahead with tech insights" },
-    { name: "Business", icon: Briefcase, color: "text-yellow-500 dark:text-yellow-400", description: "Master business success" },
-    { name: "Arts", icon: Palette, color: "text-pink-500 dark:text-pink-400", description: "Discover creative expression" },
+    { name: "Fiction", icon: BookOpen, color: "text-violet-500 dark:text-violet-400", description: "Immerse yourself in captivating stories and imaginative worlds" },
+    { name: "Non-Fiction", icon: Brain, color: "text-blue-500 dark:text-blue-400", description: "Expand your knowledge with real-world insights" },
+    { name: "Science", icon: GraduationCap, color: "text-green-500 dark:text-green-400", description: "Explore the wonders of scientific discovery" },
+    { name: "Technology", icon: Bookmark, color: "text-red-500 dark:text-red-400", description: "Stay ahead with cutting-edge tech insights" },
+    { name: "Business", icon: Briefcase, color: "text-yellow-500 dark:text-yellow-400", description: "Master the art of business success" },
+    { name: "Arts", icon: Palette, color: "text-pink-500 dark:text-pink-400", description: "Discover the beauty of creative expression" },
   ];
 
   return (
@@ -47,7 +47,7 @@ export const Categories = () => {
               >
                 <category.icon className={`h-8 w-8 ${category.color} transition-transform duration-300 group-hover:scale-110`} aria-hidden="true" />
                 <span className="font-medium text-foreground dark:text-foreground/90">{category.name}</span>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground/80 px-2 line-clamp-1">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground/80 line-clamp-2 px-2">
                   {category.description}
                 </p>
               </Button>

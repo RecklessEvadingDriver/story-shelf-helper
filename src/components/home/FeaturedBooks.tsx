@@ -1,45 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSearchBooks } from "@/services/bookApi";
 import { BookCard } from "@/components/BookCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export const FeaturedBooks = () => {
+  const { data: books, isLoading } = useSearchBooks("bestseller");
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const { data: books, isLoading, error } = useQuery({
-    queryKey: ['featured-books'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(4);
-      
-      if (error) {
-        console.error('Error fetching featured books:', error);
-        toast({
-          title: "Error loading books",
-          description: "There was a problem loading the featured books. Please try again later.",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('No featured books found');
-      } else {
-        console.log('Fetched featured books:', data);
-      }
-
-      return data;
-    }
-  });
 
   const container = {
     hidden: { opacity: 0 },
@@ -55,39 +24,6 @@ export const FeaturedBooks = () => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };
-
-  if (error) {
-    return (
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-red-500">Failed to load featured books. Please try again later.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Featured Books</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="h-[400px] w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
@@ -117,29 +53,31 @@ export const FeaturedBooks = () => {
           </motion.div>
         </div>
         
-        <motion.div 
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
-        >
-          {books && books.length > 0 ? (
-            books.map((book) => (
-              <motion.div 
-                key={book.id} 
-                variants={item}
-                className="transform transition-all duration-300 hover:-translate-y-1"
-              >
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="h-[400px] w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <motion.div 
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
+          >
+            {books?.slice(0, 4).map((book) => (
+              <motion.div key={book.id} variants={item} className="transform transition-all duration-300 hover:-translate-y-1">
                 <BookCard {...book} />
               </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-muted-foreground">
-              No featured books available at the moment.
-            </div>
-          )}
-        </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );

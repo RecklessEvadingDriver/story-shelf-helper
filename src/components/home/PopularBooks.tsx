@@ -6,37 +6,20 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 export const PopularBooks = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
-  const { data: books, isLoading, error } = useQuery({
+  const { data: books, isLoading } = useQuery({
     queryKey: ['popular-books'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('books')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(4);
+        .limit(4)
+        .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching popular books:', error);
-        toast({
-          title: "Error loading books",
-          description: "There was a problem loading the popular books. Please try again later.",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('No popular books found');
-      } else {
-        console.log('Fetched popular books:', data);
-      }
-
+      if (error) throw error;
       return data;
     }
   });
@@ -56,23 +39,11 @@ export const PopularBooks = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  if (error) {
-    return (
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-red-500">Failed to load popular books. Please try again later.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   if (isLoading) {
     return (
       <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12">Popular Books</h2>
+          <h2 className="text-3xl font-bold mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Popular Books</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-4">
@@ -86,6 +57,8 @@ export const PopularBooks = () => {
       </section>
     );
   }
+
+  if (!books?.length) return null;
 
   return (
     <section className="py-20 bg-gradient-to-b from-background via-secondary/30 to-background dark:from-background dark:via-secondary/5 dark:to-background">
@@ -121,21 +94,15 @@ export const PopularBooks = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
         >
-          {books && books.length > 0 ? (
-            books.map((book) => (
-              <motion.div 
-                key={book.id} 
-                variants={item}
-                className="transform transition-all duration-300 hover:-translate-y-1"
-              >
-                <BookCard {...book} />
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-muted-foreground">
-              No popular books available at the moment.
-            </div>
-          )}
+          {books?.map((book) => (
+            <motion.div 
+              key={book.id} 
+              variants={item}
+              className="transform transition-all duration-300 hover:-translate-y-1"
+            >
+              <BookCard {...book} />
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>
