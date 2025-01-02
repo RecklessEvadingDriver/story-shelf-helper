@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookCard } from "@/components/BookCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchBar } from "@/components/SearchBar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Books = () => {
   const [searchParams] = useSearchParams();
@@ -12,29 +13,23 @@ const Books = () => {
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", category, searchQuery],
     queryFn: async () => {
-      let query = searchQuery || category || "programming";
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-          query
-        )}&maxResults=40`
-      );
-      const data = await response.json();
+      let query = supabase
+        .from('books')
+        .select('*')
+        .limit(40);
+
+      if (category) {
+        query = query.eq('category', category);
+      }
+
+      if (searchQuery) {
+        query = query.or(`title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+      }
+
+      const { data, error } = await query;
       
-      return data.items?.map((book: any) => ({
-        id: book.id,
-        title: book.volumeInfo.title,
-        author: book.volumeInfo.authors?.[0] || "Unknown Author",
-        price: book.saleInfo?.listPrice?.amount || 9.99,
-        cover_image: book.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || "/placeholder.svg",
-        description: book.volumeInfo.description,
-        category: book.volumeInfo.categories?.[0] || "Uncategorized",
-        publisher: book.volumeInfo.publisher,
-        publishedDate: book.volumeInfo.publishedDate,
-        pageCount: book.volumeInfo.pageCount,
-        averageRating: book.volumeInfo.averageRating,
-        ratingsCount: book.volumeInfo.ratingsCount,
-        previewLink: book.volumeInfo.previewLink,
-      })) || [];
+      if (error) throw error;
+      return data || [];
     },
   });
 
